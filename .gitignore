@@ -1,0 +1,3 @@
+*.env
+task4
+postgres_data
