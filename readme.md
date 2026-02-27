@@ -48,7 +48,7 @@ make run
 
 ```bash
 BIND_IP=0.0.0.0
-LISTEN_PORT=8888
+LISTEN_PORT=8001
 PSQL_HOST=task4-db
 PSQL_PORT=5432
 PSQL_NAME=postgres
