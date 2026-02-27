@@ -1,0 +1,222 @@
+/* style.css */
+:root {
+    --bg: #121212;
+    --surface: #1e1e1e;
+    --primary: #bb86fc;
+    --secondary: #03dac6;
+    --error: #cf6679;
+    --text: #e1e1e1;
+    --border: #333;
+}
+
+body { 
+    font-family: 'Segoe UI', Tahoma, sans-serif; 
+    margin: 20px; 
+    background: var(--bg); 
+    color: var(--text); 
+    line-height: 1.6; 
+}
+
+.container { 
+    max-width: 1100px; 
+    margin: 0 auto; 
+    background: var(--surface); 
+    padding: 25px; 
+    border-radius: 12px; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+}
+
+h1 { 
+    color: var(--primary); 
+    text-align: center; 
+    letter-spacing: 3px; 
+    text-transform: uppercase; 
+    margin-bottom: 30px; 
+}
+
+/* Секция фильтров */
+.section { 
+    background: #252525; 
+    padding: 20px; 
+    border-radius: 8px; 
+    margin-bottom: 20px; 
+    border: 1px solid var(--border); 
+}
+
+.grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); 
+    gap: 15px; 
+    margin-bottom: 15px; 
+}
+
+.field label { 
+    font-size: 10px; 
+    color: var(--primary); 
+    text-transform: uppercase; 
+    margin-bottom: 5px; 
+    display: block; 
+    font-weight: bold; 
+}
+
+input, select { 
+    background: #333; 
+    border: 1px solid #444; 
+    color: white; 
+    padding: 10px; 
+    border-radius: 4px; 
+    width: 100%; 
+    box-sizing: border-box; 
+    outline: none; 
+}
+
+input:focus { 
+    border-color: var(--primary); 
+}
+
+button { 
+    padding: 10px 15px; 
+    cursor: pointer; 
+    border: none; 
+    border-radius: 4px; 
+    font-weight: bold; 
+    transition: 0.2s; 
+    opacity: 0.9; 
+}
+
+button:hover { 
+    opacity: 1; 
+    transform: translateY(-1px); 
+}
+
+button:active { 
+    transform: translateY(0); 
+}
+
+.btn-add { 
+    background: var(--primary); 
+    color: #000; 
+    width: 100%; 
+    margin-bottom: 20px; 
+    font-size: 14px; 
+}
+
+.btn-save { 
+    background: var(--secondary); 
+    color: #000; 
+}
+
+.btn-search { 
+    background: #3700b3; 
+    color: white; 
+    flex: 2; 
+}
+
+.btn-clear { 
+    background: #444; 
+    color: white; 
+    flex: 1; 
+}
+
+.btn-edit { 
+    background: var(--secondary); 
+    color: #000; 
+    padding: 5px 10px; 
+    font-size: 11px; 
+    margin-right: 5px; 
+}
+
+.btn-delete { 
+    background: var(--error); 
+    color: white; 
+    padding: 5px 10px; 
+    font-size: 11px; 
+}
+
+table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    margin-top: 10px; 
+}
+
+th { 
+    background: #2c2c2c; 
+    color: var(--secondary); 
+    padding: 15px; 
+    text-align: left; 
+    font-size: 12px; 
+    border-bottom: 2px solid var(--border); 
+}
+
+td { 
+    padding: 12px 15px; 
+    border-bottom: 1px solid var(--border); 
+    font-size: 14px; 
+}
+
+tr:hover { 
+    background: #2a2a2a; 
+}
+
+/* MODAL STYLES (Common) */
+.modal { 
+    display: none; 
+    position: fixed; 
+    z-index: 1000; 
+    left: 0; 
+    top: 0; 
+    width: 100%; 
+    height: 100%; 
+    background: rgba(0,0,0,0.85); 
+    backdrop-filter: blur(4px); 
+}
+
+.modal-content { 
+    background: var(--surface); 
+    margin: 8% auto; 
+    padding: 30px; 
+    width: 500px; 
+    border-radius: 12px; 
+    border: 1px solid var(--primary); 
+    box-shadow: 0 0 20px rgba(187, 134, 252, 0.2); 
+}
+
+.modal-actions { 
+    display: flex; 
+    gap: 10px; 
+    margin-top: 25px; 
+}
+
+.modal-actions button { 
+    flex: 1; 
+}
+
+.pagination { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-top: 20px; 
+    padding: 15px; 
+    background: #252525; 
+    border-radius: 8px; 
+    border: 1px solid var(--border); 
+}
+
+.btn-nav { 
+    background: #333; 
+    color: var(--primary); 
+    border: 1px solid var(--primary); 
+    width: 45px; 
+}
+
+.btn-nav:disabled { 
+    border-color: #444; 
+    color: #555; 
+    cursor: not-allowed; 
+}
+
+.page-info { 
+    font-family: monospace; 
+    font-size: 14px; 
+    color: var(--secondary); 
+}

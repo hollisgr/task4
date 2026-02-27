@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Book Terminal v1.1</title>
+    <script src="config.js"></script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Book Terminal</h1>
+
+      <!-- Кнопка теперь открывает модалку -->
+      <button class="btn-add" onclick="openModal('createModal')">
+        + CREATE NEW DATABASE ENTRY
+      </button>
+
+      <!-- Фильтры -->
+      <div class="section">
+        <div class="grid">
+          <div class="field">
+            <label>Filter Author</label><input type="text" id="fAuthor" />
+          </div>
+          <div class="field">
+            <label>Filter Title</label><input type="text" id="fTitle" />
+          </div>
+          <div class="field">
+            <label>Filter Genre</label><input type="text" id="fGenre" />
+          </div>
+          <div class="field">
+            <label>Year From</label
+            ><input
+              type="text"
+              id="fYearFrom"
+              oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+            />
+          </div>
+          <div class="field">
+            <label>Year To</label
+            ><input
+              type="text"
+              id="fYearTo"
+              oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+            />
+          </div>
+        </div>
+        <div style="display: flex; gap: 10px">
+          <button class="btn-search" onclick="resetAndLoad()">
+            RUN SEARCH QUERY
+          </button>
+          <button class="btn-clear" onclick="clearFilters()">
+            RESET FILTERS
+          </button>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>AUTHOR</th>
+            <th>TITLE</th>
+            <th>YEAR</th>
+            <th>PAGES</th>
+            <th>GENRE</th>
+            <th>ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody id="booksBody"></tbody>
+      </table>
+
+      <div class="pagination">
+        <button id="prevBtn" class="btn-nav" onclick="changePage(-1)">◀</button>
+        <div id="pageInfo" class="page-info">PAGE: 1 | TOTAL: 0</div>
+        <button id="nextBtn" class="btn-nav" onclick="changePage(1)">▶</button>
+        <select id="limitSelect" onchange="resetAndLoad()" style="width: 80px">
+          <option value="5">5</option>
+          <option value="10" selected>10</option>
+          <option value="20">20</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- CREATE MODAL -->
+    <div id="createModal" class="modal">
+      <div class="modal-content" style="border-color: var(--secondary)">
+        <h2 style="color: var(--secondary); margin-top: 0">
+          NEW DATABASE ENTRY
+        </h2>
+        <div class="grid" style="grid-template-columns: 1fr 1fr">
+          <div class="field" style="grid-column: span 2">
+            <label>Author</label><input type="text" id="cAuthor" />
+          </div>
+          <div class="field" style="grid-column: span 2">
+            <label>Title</label><input type="text" id="cTitle" />
+          </div>
+          <div class="field" style="grid-column: span 2">
+            <label>Genre</label><input type="text" id="cGenre" />
+          </div>
+          <div class="field">
+            <label>Year</label><input type="number" id="cYear" />
+          </div>
+          <div class="field">
+            <label>Pages</label><input type="number" id="cPages" />
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn-save" onclick="createBook()">
+            EXECUTE INSERT
+          </button>
+          <button class="btn-clear" onclick="closeModal('createModal')">
+            ABORT
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- EDIT MODAL -->
+    <div id="editModal" class="modal">
+      <div class="modal-content">
+        <h2 style="color: var(--secondary); margin-top: 0">
+          EDIT RECORD #<span id="editBookId"></span>
+        </h2>
+        <div class="grid" style="grid-template-columns: 1fr 1fr">
+          <div class="field" style="grid-column: span 2">
+            <label>Author</label><input type="text" id="eAuthor" />
+          </div>
+          <div class="field" style="grid-column: span 2">
+            <label>Title</label><input type="text" id="eTitle" />
+          </div>
+          <div class="field" style="grid-column: span 2">
+            <label>Genre</label><input type="text" id="eGenre" />
+          </div>
+          <div class="field">
+            <label>Year</label><input type="number" id="eYear" />
+          </div>
+          <div class="field">
+            <label>Pages</label><input type="number" id="ePages" />
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn-save" onclick="updateBook()">
+            CONFIRM UPDATE
+          </button>
+          <button class="btn-clear" onclick="closeModal('editModal')">
+            ABORT
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let offset = 0,
+        total = 0;
+
+      async function loadBooks() {
+        const limit = parseInt(document.getElementById("limitSelect").value);
+        const params = new URLSearchParams({
+          limit,
+          offset,
+          author: document.getElementById("fAuthor").value,
+          title: document.getElementById("fTitle").value,
+          genre: document.getElementById("fGenre").value,
+          year_from: document.getElementById("fYearFrom").value,
+          year_to: document.getElementById("fYearTo").value,
+        });
+
+        try {
+          const res = await fetch(`${getUrl()}?${params}`);
+          const result = await res.json();
+          if (result.success && result.data) {
+            total = result.data.total || 0;
+            renderTable(result.data.books || []);
+            updateUI(limit);
+          }
+        } catch (e) {
+          document.getElementById("booksBody").innerHTML =
+            '<tr><td colspan="7" style="color:var(--error); text-align:center">SERVER OFFLINE</td></tr>';
+        }
+      }
+
+      function renderTable(books) {
+        document.getElementById("booksBody").innerHTML = books
+          .map(
+            (b) => `
+            <tr>
+                <td>${b.id}</td><td style="color:var(--secondary)">${b.author}</td><td>${b.title}</td>
+                <td>${b.publication_year}</td><td>${b.pages}</td><td><small>${b.genre}</small></td>
+                <td>
+                    <button class="btn-edit" onclick="openEditModal(${b.id})">EDIT</button>
+                    <button class="btn-delete" onclick="deleteBook(${b.id})">DEL</button>
+                </td>
+            </tr>
+        `
+          )
+          .join("");
+      }
+
+      async function createBook() {
+        const payload = {
+          author: document.getElementById("cAuthor").value,
+          title: document.getElementById("cTitle").value,
+          genre: document.getElementById("cGenre").value,
+          publication_year:
+            parseInt(document.getElementById("cYear").value) || 0,
+          pages: parseInt(document.getElementById("cPages").value) || 0,
+        };
+        try {
+          const res = await fetch(getUrl(), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          if (res.ok) {
+            closeModal("createModal");
+            clearCreateInputs();
+            resetAndLoad();
+          } else {
+            alert("CREATE FAILED");
+          }
+        } catch (e) {
+          alert("CONNECTION ERROR");
+        }
+      }
+
+      async function openEditModal(id) {
+        try {
+          const res = await fetch(getUrl(id));
+          const result = await res.json();
+          if (result.success) {
+            const b = result.data;
+            document.getElementById("editBookId").innerText = b.id;
+            document.getElementById("eAuthor").value = b.author;
+            document.getElementById("eTitle").value = b.title;
+            document.getElementById("eGenre").value = b.genre;
+            document.getElementById("eYear").value = b.publication_year;
+            document.getElementById("ePages").value = b.pages;
+            openModal("editModal");
+          }
+        } catch (e) {
+          alert("LOAD FAILED");
+        }
+      }
+
+      async function updateBook() {
+        const id = document.getElementById("editBookId").innerText;
+        const payload = {
+          author: document.getElementById("eAuthor").value,
+          title: document.getElementById("eTitle").value,
+          genre: document.getElementById("eGenre").value,
+          publication_year: parseInt(document.getElementById("eYear").value),
+          pages: parseInt(document.getElementById("ePages").value),
+        };
+        try {
+          const res = await fetch(getUrl(id), {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          if (res.ok) {
+            closeModal("editModal");
+            loadBooks();
+          }
+        } catch (e) {
+          alert("UPDATE FAILED");
+        }
+      }
+
+      async function deleteBook(id) {
+        if (!confirm(`CONFIRM PERMANENT DELETION OF RECORD #${id}?`)) return;
+        try {
+          const res = await fetch(getUrl(id), { method: "DELETE" });
+          if (res.ok) {
+            loadBooks();
+          }
+        } catch (e) {
+          alert("DELETE FAILED");
+        }
+      }
+
+      // UI HELPERS
+      function openModal(modalId) {
+        document.getElementById(modalId).style.display = "block";
+      }
+      function closeModal(modalId) {
+        document.getElementById(modalId).style.display = "none";
+      }
+
+      function updateUI(limit) {
+        document.getElementById("prevBtn").disabled = offset === 0;
+        document.getElementById("nextBtn").disabled = offset + limit >= total;
+        document.getElementById("pageInfo").innerText = `PAGE: ${
+          Math.floor(offset / limit) + 1
+        } | TOTAL: ${total}`;
+      }
+      function changePage(step) {
+        offset += step * parseInt(document.getElementById("limitSelect").value);
+        loadBooks();
+      }
+      function resetAndLoad() {
+        offset = 0;
+        loadBooks();
+      }
+      function clearCreateInputs() {
+        ["cAuthor", "cTitle", "cGenre", "cYear", "cPages"].forEach(
+          (id) => (document.getElementById(id).value = "")
+        );
+      }
+      function clearFilters() {
+        ["fAuthor", "fTitle", "fGenre", "fYearFrom", "fYearTo"].forEach(
+          (id) => (document.getElementById(id).value = "")
+        );
+        resetAndLoad();
+      }
+
+      window.onload = loadBooks;
+
+      // Close modal on outside click
+      window.onclick = function (event) {
+        if (event.target.className === "modal") {
+          event.target.style.display = "none";
+        }
+      };
+    </script>
+  </body>
+</html>
