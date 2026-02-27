@@ -63,3 +63,11 @@ DOCKER_PSQL_PORT=25432
 ```bash
 make docker-compose-up
 ```
+
+### Web Interface:
+
+For better visualization and hands-on testing of the API, a web interface has been developed. It allows you to perform full CRUD operations (Create, Read, Update, Delete) and test complex filtering/pagination logic in real-time.
+
+- **Location**: The web interface files are located in the web/ directory (main file: web/index.html).
+- **Configuration**: By default, the frontend is configured to connect to the server at 127.0.0.1:8001 (set in web/config.js).
+- **Important**: If you change the BIND_IP or LISTEN_PORT in your config.env, you must update the BASE_URL in web/config.js accordingly to ensure the interface can reach the API.
