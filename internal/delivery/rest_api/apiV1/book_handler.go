@@ -29,6 +29,46 @@ func NewBookHandler(bu BookUseCase) *BookHandler {
 	}
 }
 
+func (h *BookHandler) Create(c *gin.Context) {
+	req := CreateBookRequest{}
+	err := c.ShouldBindBodyWithJSON(&req)
+	if err != nil {
+		response.SendError(c, http.StatusBadRequest, "invalid body")
+		return
+	}
+	data := req.ToDomain()
+	id, err := h.bu.Create(c.Request.Context(), data)
+	if err != nil {
+		response.SendError(c, http.StatusInternalServerError, "internal err")
+		return
+	}
+
+	response.SendSuccess(c, http.StatusCreated, id)
+}
+
+func (h *BookHandler) Load(c *gin.Context) {
+	idStr := c.Param("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		response.SendError(c, http.StatusBadRequest, "invalid id")
+		return
+	}
+	book, err := h.bu.Load(c.Request.Context(), id)
+	if err != nil {
+		if errors.Is(err, domain.ErrBookNotFound) {
+			response.SendError(c, http.StatusNotFound, "book not found")
+			return
+		}
+		response.SendError(c, http.StatusInternalServerError, "internal err")
+		return
+	}
+
+	resp := response.BookResponse{}
+	resp.FromDomain(book)
+
+	response.SendSuccess(c, http.StatusOK, resp)
+}
+
 func (h *BookHandler) List(c *gin.Context) {
 	req := ListBooksRequest{}
 	err := c.ShouldBindQuery(&req)
@@ -59,47 +99,7 @@ func (h *BookHandler) List(c *gin.Context) {
 		Total: total,
 	}
 
-	response.SendSuccess(c, http.StatusCreated, resp)
-}
-
-func (h *BookHandler) Load(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		response.SendError(c, http.StatusBadRequest, "invalid id")
-		return
-	}
-	book, err := h.bu.Load(c.Request.Context(), id)
-	if err != nil {
-		if errors.Is(err, domain.ErrBookNotFound) {
-			response.SendError(c, http.StatusNotFound, "book not found")
-			return
-		}
-		response.SendError(c, http.StatusInternalServerError, "internal err")
-		return
-	}
-
-	resp := response.BookResponse{}
-	resp.FromDomain(book)
-
 	response.SendSuccess(c, http.StatusOK, resp)
-}
-
-func (h *BookHandler) Create(c *gin.Context) {
-	req := CreateBookRequest{}
-	err := c.ShouldBindBodyWithJSON(&req)
-	if err != nil {
-		response.SendError(c, http.StatusBadRequest, "invalid body")
-		return
-	}
-	data := req.ToDomain()
-	id, err := h.bu.Create(c.Request.Context(), data)
-	if err != nil {
-		response.SendError(c, http.StatusInternalServerError, "internal err")
-		return
-	}
-
-	response.SendSuccess(c, http.StatusOK, id)
 }
 
 func (h *BookHandler) Delete(c *gin.Context) {

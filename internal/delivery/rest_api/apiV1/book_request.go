@@ -29,11 +29,11 @@ func (l *ListBooksRequest) ToDomain() domain.BookFilter {
 }
 
 type CreateBookRequest struct {
-	Author          string `json:"author"`
-	Title           string `json:"title"`
-	PublicationYear int    `json:"publication_year"`
-	Pages           int    `json:"pages"`
-	Genre           string `json:"genre"`
+	Author          string `json:"author" binding:"required"`
+	Title           string `json:"title" binding:"required"`
+	PublicationYear int    `json:"publication_year" binding:"required,gt=0"`
+	Pages           int    `json:"pages" binding:"required,gt=0"`
+	Genre           string `json:"genre" binding:"required"`
 }
 
 func (r *CreateBookRequest) ToDomain() domain.Book {

@@ -6,6 +6,7 @@ GIN := github.com/gin-gonic/gin
 PGX := github.com/jackc/pgx github.com/jackc/pgx/v5/pgxpool
 CORS := github.com/gin-contrib/cors
 SQUIRREL := github.com/Masterminds/squirrel
+MOCK := github.com/stretchr/testify/mock
 
 all: build run
 
@@ -27,7 +28,8 @@ get:
 		$(CLEANENV) \
 		$(PGX) \
 		$(CORS) \
-		$(SQUIRREL)
+		$(SQUIRREL) \
+		$(MOCK)
 
 docker-compose-up-silent: docker-compose-stop
 	sudo docker compose -f docker-compose.yml --env-file=config.env up -d
