@@ -11,11 +11,11 @@ type BookUseCase struct {
 }
 
 type BookRepository interface {
-	Create(ctx context.Context, data domain.Book) (id int, err error)
+	CreateWithLog(ctx context.Context, data domain.Book) (id int, err error)
 	List(ctx context.Context, f domain.BookFilter) ([]domain.Book, int, error)
 	Load(ctx context.Context, id int) (domain.Book, error)
-	Delete(ctx context.Context, id int) error
-	Update(ctx context.Context, id int, data domain.Book) error
+	DeleteWithLog(ctx context.Context, id int) error
+	UpdateWithLog(ctx context.Context, id int, data domain.Book) error
 }
 
 func NewBookUseCase(bookRepo BookRepository) BookUseCase {
@@ -47,7 +47,7 @@ func (uc *BookUseCase) Load(ctx context.Context, id int) (domain.Book, error) {
 
 func (uc *BookUseCase) Create(ctx context.Context, data domain.Book) (int, error) {
 	log.Println("new data:", data)
-	id, err := uc.bookRepo.Create(ctx, data)
+	id, err := uc.bookRepo.CreateWithLog(ctx, data)
 	if err != nil {
 		log.Println("book usecase create err:", err)
 		return id, err
@@ -56,7 +56,7 @@ func (uc *BookUseCase) Create(ctx context.Context, data domain.Book) (int, error
 }
 
 func (uc *BookUseCase) Delete(ctx context.Context, id int) error {
-	err := uc.bookRepo.Delete(ctx, id)
+	err := uc.bookRepo.DeleteWithLog(ctx, id)
 	if err != nil {
 		log.Println("book usecase delete err:", err)
 		return err
@@ -65,7 +65,7 @@ func (uc *BookUseCase) Delete(ctx context.Context, id int) error {
 }
 
 func (uc *BookUseCase) Update(ctx context.Context, id int, data domain.Book) error {
-	err := uc.bookRepo.Update(ctx, id, data)
+	err := uc.bookRepo.UpdateWithLog(ctx, id, data)
 	if err != nil {
 		log.Println("book usecase update err:", err)
 		return err

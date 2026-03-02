@@ -330,9 +330,16 @@ VALUES (
     'Detective'
 );
 
+CREATE TABLE books_log(
+    id SERIAL PRIMARY KEY,
+    book_id INTEGER NOT NULL,
+    action TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW()
+);
 -- +goose StatementEnd
 
 -- +goose Down
 -- +goose StatementBegin
-SELECT 'down SQL query';
+DROP TABLE IF EXISTS books;
+DROP TABLE IF EXISTS books_log;
 -- +goose StatementEnd

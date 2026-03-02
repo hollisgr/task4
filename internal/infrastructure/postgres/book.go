@@ -21,22 +21,57 @@ func NewBookStorage(pool *pgxpool.Pool) *BookStorage {
 	}
 }
 
-func (s *BookStorage) Create(ctx context.Context, data domain.Book) (id int, err error) {
-	builder := squirrel.Insert("books").
+func (s *BookStorage) CreateWithLog(ctx context.Context, data domain.Book) (id int, err error) {
+
+	// begin transaction
+	tx, err := s.db.Begin(ctx)
+	if err != nil {
+		return id, fmt.Errorf("db create: failed to create transaction: %w", err)
+	}
+
+	// rollback transaction
+	defer tx.Rollback(ctx)
+
+	// create new book
+	bookInsert := squirrel.Insert("books").
 		Columns("author", "title", "publication_year", "pages", "genre").
 		Values(data.Author, data.Title, data.PublicationYear, data.Pages, data.Genre).
 		Suffix("RETURNING id").
 		PlaceholderFormat(squirrel.Dollar)
 
-	sqlStr, args, err := builder.ToSql()
+	bookInsertSql, args, err := bookInsert.ToSql()
 	if err != nil {
-		return id, errors.New("failed to generate SQL statement: " + err.Error())
+		return id, fmt.Errorf("db create: failed to generate SQL (book insert): %w", err)
 	}
 
-	row := s.db.QueryRow(ctx, sqlStr, args...)
+	row := tx.QueryRow(ctx, bookInsertSql, args...)
 	err = row.Scan(&id)
 	if err != nil {
-		return id, fmt.Errorf("db insert book error: %w", err)
+		return id, fmt.Errorf("db create: insert book error: %w", err)
+	}
+
+	// create new log recording
+	createLog := squirrel.Insert("books_log").
+		Columns("book_id", "action").
+		Values(id, "create").
+		Suffix("RETURNING id").
+		PlaceholderFormat(squirrel.Dollar)
+
+	createLogSql, args, err := createLog.ToSql()
+	if err != nil {
+		return id, fmt.Errorf("db create: failed to generate SQL (book_log insert): %w", err)
+	}
+
+	row = tx.QueryRow(ctx, createLogSql, args...)
+	err = row.Scan(&id)
+	if err != nil {
+		return id, fmt.Errorf("db create: insert book_log error: %w", err)
+	}
+
+	// commit transaction
+	err = tx.Commit(ctx)
+	if err != nil {
+		return id, fmt.Errorf("db create: books create commit tx error: %w", err)
 	}
 
 	return id, nil
@@ -143,29 +178,73 @@ func (s *BookStorage) Load(ctx context.Context, id int) (domain.Book, error) {
 	return b, nil
 }
 
-func (s *BookStorage) Delete(ctx context.Context, id int) error {
-	builder := squirrel.Delete("books").
-		Where(squirrel.Eq{"id": id}).
-		PlaceholderFormat(squirrel.Dollar)
-	sql, args, err := builder.ToSql()
+func (s *BookStorage) DeleteWithLog(ctx context.Context, id int) error {
+
+	// begin transaction
+	tx, err := s.db.Begin(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to build delete query: %w", err)
+		return fmt.Errorf("db delete: failed to create transaction: %w", err)
 	}
 
-	result, err := s.db.Exec(ctx, sql, args...)
+	// rollback transaction
+	defer tx.Rollback(ctx)
+
+	// delete book
+	deleteBook := squirrel.Delete("books").
+		Where(squirrel.Eq{"id": id}).
+		PlaceholderFormat(squirrel.Dollar)
+	deleteBookSql, args, err := deleteBook.ToSql()
 	if err != nil {
-		return fmt.Errorf("db delete book error: %w", err)
+		return fmt.Errorf("db delete: failed to build delete query: %w", err)
+	}
+
+	result, err := tx.Exec(ctx, deleteBookSql, args...)
+	if err != nil {
+		return fmt.Errorf("db delete: exec error (delete book): %w", err)
 	}
 
 	if result.RowsAffected() == 0 {
 		return domain.ErrBookNotFound
 	}
 
+	// create log
+	logID := 0
+	createLog := squirrel.Insert("books_log").
+		Columns("book_id", "action").
+		Values(id, "delete").
+		Suffix("RETURNING id").
+		PlaceholderFormat(squirrel.Dollar)
+	createLogSql, args, err := createLog.ToSql()
+	if err != nil {
+		return fmt.Errorf("db delete: failed to build create log query:%w", err)
+	}
+	row := tx.QueryRow(ctx, createLogSql, args...)
+	err = row.Scan(&logID)
+	if err != nil {
+		return fmt.Errorf("db delete: query row error (create log): %w", err)
+	}
+
+	// commit transaction
+	err = tx.Commit(ctx)
+	if err != nil {
+		return fmt.Errorf("db delete: commit transaction error: %w", err)
+	}
 	return nil
 }
 
-func (s *BookStorage) Update(ctx context.Context, id int, book domain.Book) error {
-	builder := squirrel.Update("books").
+func (s *BookStorage) UpdateWithLog(ctx context.Context, id int, book domain.Book) error {
+
+	// begin transaction
+	tx, err := s.db.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("db update: begin transaction error: %w", err)
+	}
+
+	// rollback transaction
+	defer tx.Rollback(ctx)
+
+	// update book
+	updateBook := squirrel.Update("books").
 		Set("author", book.Author).
 		Set("title", book.Title).
 		Set("publication_year", book.PublicationYear).
@@ -174,18 +253,43 @@ func (s *BookStorage) Update(ctx context.Context, id int, book domain.Book) erro
 		Where(squirrel.Eq{"id": id}).
 		PlaceholderFormat(squirrel.Dollar)
 
-	sql, args, err := builder.ToSql()
+	updateBookSql, args, err := updateBook.ToSql()
 	if err != nil {
-		return fmt.Errorf("failed to build update query: %w", err)
+		return fmt.Errorf("db update: failed to build update query: %w", err)
 	}
 
-	result, err := s.db.Exec(ctx, sql, args...)
+	result, err := tx.Exec(ctx, updateBookSql, args...)
 	if err != nil {
-		return fmt.Errorf("db update book error: %w", err)
+		return fmt.Errorf("db update: exec error (update book): %w", err)
 	}
 
 	if result.RowsAffected() == 0 {
 		return domain.ErrBookNotFound
+	}
+
+	// create log
+	logID := 0
+	createLog := squirrel.Insert("books_log").
+		Columns("book_id", "action").
+		Values(id, "update").
+		Suffix("RETURNING id").
+		PlaceholderFormat(squirrel.Dollar)
+
+	createLogSql, args, err := createLog.ToSql()
+	if err != nil {
+		return fmt.Errorf("db update: failed to build create log query: %w", err)
+	}
+
+	row := tx.QueryRow(ctx, createLogSql, args)
+	err = row.Scan(&logID)
+	if err != nil {
+		return fmt.Errorf("db update: query row error (create log): %w", err)
+	}
+
+	// commit transaction
+	err = tx.Commit(ctx)
+	if err != nil {
+		return fmt.Errorf("db update: commit transaction error: %w", err)
 	}
 
 	return nil
