@@ -26,14 +26,14 @@ func SetupUseCases(cfg *config.Config, pool *pgxpool.Pool) usecase.BookUseCase {
 	return autoUseCases
 }
 
-// SetupRouter configures and returns a gin.Engine instance with registered wallet handlers.
+// SetupRouter configures and returns a gin.Engine instance with registered handlers.
 func SetupRouter(bu usecase.BookUseCase, cfg *config.Config) *gin.Engine {
 	r := gin.Default()
 	h := restapi.NewRouter(r, bu)
 	configCORS := cors.DefaultConfig()
 	configCORS.AllowOrigins = []string{"*"}
 	configCORS.AllowHeaders = []string{"Origin", "Content-Type", "Accept", "Authorization"}
-	configCORS.AllowCredentials = true
+	configCORS.AllowCredentials = false
 	r.Use(cors.New(configCORS))
 
 	h.Register()

@@ -25,11 +25,11 @@ func NewPool(ctx context.Context, maxAttempts int, dsn string) (pool *pgxpool.Po
 	return pool, nil
 }
 
-func DoWithTries(fn func() error, attemtps int, delay time.Duration) (err error) {
-	for attemtps > 0 {
+func DoWithTries(fn func() error, attempts int, delay time.Duration) (err error) {
+	for attempts > 0 {
 		if err = fn(); err != nil {
 			time.Sleep(delay)
-			attemtps--
+			attempts--
 			continue
 		}
 		return nil

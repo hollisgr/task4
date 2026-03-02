@@ -59,7 +59,7 @@ func (h *BookHandler) List(c *gin.Context) {
 		Total: total,
 	}
 
-	response.SendSuccess(c, http.StatusOK, resp)
+	response.SendSuccess(c, http.StatusCreated, resp)
 }
 
 func (h *BookHandler) Load(c *gin.Context) {
