@@ -214,6 +214,7 @@ func (s *BookStorage) DeleteWithLog(ctx context.Context, id int) error {
 		Values(id, "delete").
 		Suffix("RETURNING id").
 		PlaceholderFormat(squirrel.Dollar)
+
 	createLogSql, args, err := createLog.ToSql()
 	if err != nil {
 		return fmt.Errorf("db delete: failed to build create log query:%w", err)
@@ -280,7 +281,7 @@ func (s *BookStorage) UpdateWithLog(ctx context.Context, id int, book domain.Boo
 		return fmt.Errorf("db update: failed to build create log query: %w", err)
 	}
 
-	row := tx.QueryRow(ctx, createLogSql, args)
+	row := tx.QueryRow(ctx, createLogSql, args...)
 	err = row.Scan(&logID)
 	if err != nil {
 		return fmt.Errorf("db update: query row error (create log): %w", err)
