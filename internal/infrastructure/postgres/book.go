@@ -7,7 +7,7 @@ import (
 	"task4/internal/domain"
 
 	"github.com/Masterminds/squirrel"
-	"github.com/jackc/pgx"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -155,7 +155,7 @@ func (s *BookStorage) Load(ctx context.Context, id int) (domain.Book, error) {
 
 	sqlStr, args, err := builder.ToSql()
 	if err != nil {
-		return domain.Book{}, fmt.Errorf("failed to build load query: %w", err)
+		return domain.Book{}, fmt.Errorf("db load: failed to build load query: %w", err)
 	}
 
 	var b domain.Book
@@ -169,10 +169,10 @@ func (s *BookStorage) Load(ctx context.Context, id int) (domain.Book, error) {
 	)
 
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) || err.Error() == "sql: no rows in result set" {
+		if errors.Is(err, pgx.ErrNoRows) {
 			return domain.Book{}, domain.ErrBookNotFound
 		}
-		return domain.Book{}, fmt.Errorf("db load book error: %w", err)
+		return domain.Book{}, fmt.Errorf("db load: query row error: %w", err)
 	}
 
 	return b, nil
