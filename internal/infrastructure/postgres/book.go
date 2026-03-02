@@ -95,6 +95,12 @@ func (s *BookStorage) List(ctx context.Context, f domain.BookFilter) ([]domain.B
 	if f.YearTo > 0 {
 		conditions = append(conditions, squirrel.LtOrEq{"publication_year": f.YearTo})
 	}
+	if f.PagesFrom > 0 {
+		conditions = append(conditions, squirrel.GtOrEq{"pages": f.PagesFrom})
+	}
+	if f.PagesTo > 0 {
+		conditions = append(conditions, squirrel.LtOrEq{"pages": f.PagesTo})
+	}
 
 	countQuery, args, err := squirrel.Select("COUNT(*)").
 		From("books").

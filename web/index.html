@@ -2,7 +2,7 @@
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
-    <title>Book Terminal v1.1</title>
+    <title>Book Terminal v1.2</title>
     <script src="config.js"></script>
     <link rel="stylesheet" href="style.css" />
   </head>
@@ -10,47 +10,47 @@
     <div class="container">
       <h1>Book Terminal</h1>
 
-      <!-- Кнопка теперь открывает модалку -->
       <button class="btn-add" onclick="openModal('createModal')">
         + CREATE NEW DATABASE ENTRY
       </button>
 
-      <!-- Фильтры -->
-      <div class="section">
-        <div class="grid">
-          <div class="field">
-            <label>Filter Author</label><input type="text" id="fAuthor" />
+      <!-- Блок фильтров -->
+<div class="section">
+        <div class="grid" style="grid-template-columns: repeat(3, 1fr);">
+          <div class="field"><label>Author</label><input type="text" id="fAuthor" /></div>
+          <div class="field"><label>Title</label><input type="text" id="fTitle" /></div>
+          <div class="field"><label>Genre</label><input type="text" id="fGenre" /></div>
+        </div>
+
+        <div class="grid" style="grid-template-columns: 1fr 1fr; margin-top: 10px; gap: 20px;">
+          <!-- Года в одну строку -->
+          <div style="display: flex; gap: 10px;">
+            <div class="field" style="flex: 1;">
+              <label>Year From</label>
+              <input type="text" id="fYearFrom" oninput="this.value=this.value.replace(/[^0-9]/g,'')" />
+            </div>
+            <div class="field" style="flex: 1;">
+              <label>Year To</label>
+              <input type="text" id="fYearTo" oninput="this.value=this.value.replace(/[^0-9]/g,'')" />
+            </div>
           </div>
-          <div class="field">
-            <label>Filter Title</label><input type="text" id="fTitle" />
-          </div>
-          <div class="field">
-            <label>Filter Genre</label><input type="text" id="fGenre" />
-          </div>
-          <div class="field">
-            <label>Year From</label
-            ><input
-              type="text"
-              id="fYearFrom"
-              oninput="this.value=this.value.replace(/[^0-9]/g,'')"
-            />
-          </div>
-          <div class="field">
-            <label>Year To</label
-            ><input
-              type="text"
-              id="fYearTo"
-              oninput="this.value=this.value.replace(/[^0-9]/g,'')"
-            />
+
+          <!-- Страницы в одну строку -->
+          <div style="display: flex; gap: 10px;">
+            <div class="field" style="flex: 1;">
+              <label>Pages From</label>
+              <input type="text" id="fPagesFrom" oninput="this.value=this.value.replace(/[^0-9]/g,'')" />
+            </div>
+            <div class="field" style="flex: 1;">
+              <label>Pages To</label>
+              <input type="text" id="fPagesTo" oninput="this.value=this.value.replace(/[^0-9]/g,'')" />
+            </div>
           </div>
         </div>
-        <div style="display: flex; gap: 10px">
-          <button class="btn-search" onclick="resetAndLoad()">
-            RUN SEARCH QUERY
-          </button>
-          <button class="btn-clear" onclick="clearFilters()">
-            RESET FILTERS
-          </button>
+
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+          <button class="btn-search" onclick="resetAndLoad()">RUN SEARCH QUERY</button>
+          <button class="btn-clear" onclick="clearFilters()">RESET FILTERS</button>
         </div>
       </div>
 
@@ -84,33 +84,17 @@
     <!-- CREATE MODAL -->
     <div id="createModal" class="modal">
       <div class="modal-content" style="border-color: var(--secondary)">
-        <h2 style="color: var(--secondary); margin-top: 0">
-          NEW DATABASE ENTRY
-        </h2>
+        <h2 style="color: var(--secondary); margin-top: 0">NEW DATABASE ENTRY</h2>
         <div class="grid" style="grid-template-columns: 1fr 1fr">
-          <div class="field" style="grid-column: span 2">
-            <label>Author</label><input type="text" id="cAuthor" />
-          </div>
-          <div class="field" style="grid-column: span 2">
-            <label>Title</label><input type="text" id="cTitle" />
-          </div>
-          <div class="field" style="grid-column: span 2">
-            <label>Genre</label><input type="text" id="cGenre" />
-          </div>
-          <div class="field">
-            <label>Year</label><input type="number" id="cYear" />
-          </div>
-          <div class="field">
-            <label>Pages</label><input type="number" id="cPages" />
-          </div>
+          <div class="field" style="grid-column: span 2"><label>Author</label><input type="text" id="cAuthor" /></div>
+          <div class="field" style="grid-column: span 2"><label>Title</label><input type="text" id="cTitle" /></div>
+          <div class="field" style="grid-column: span 2"><label>Genre</label><input type="text" id="cGenre" /></div>
+          <div class="field"><label>Year</label><input type="number" id="cYear" /></div>
+          <div class="field"><label>Pages</label><input type="number" id="cPages" /></div>
         </div>
         <div class="modal-actions">
-          <button class="btn-save" onclick="createBook()">
-            EXECUTE INSERT
-          </button>
-          <button class="btn-clear" onclick="closeModal('createModal')">
-            ABORT
-          </button>
+          <button class="btn-save" onclick="createBook()">EXECUTE INSERT</button>
+          <button class="btn-clear" onclick="closeModal('createModal')">ABORT</button>
         </div>
       </div>
     </div>
@@ -118,40 +102,23 @@
     <!-- EDIT MODAL -->
     <div id="editModal" class="modal">
       <div class="modal-content">
-        <h2 style="color: var(--secondary); margin-top: 0">
-          EDIT RECORD #<span id="editBookId"></span>
-        </h2>
+        <h2 style="color: var(--secondary); margin-top: 0">EDIT RECORD #<span id="editBookId"></span></h2>
         <div class="grid" style="grid-template-columns: 1fr 1fr">
-          <div class="field" style="grid-column: span 2">
-            <label>Author</label><input type="text" id="eAuthor" />
-          </div>
-          <div class="field" style="grid-column: span 2">
-            <label>Title</label><input type="text" id="eTitle" />
-          </div>
-          <div class="field" style="grid-column: span 2">
-            <label>Genre</label><input type="text" id="eGenre" />
-          </div>
-          <div class="field">
-            <label>Year</label><input type="number" id="eYear" />
-          </div>
-          <div class="field">
-            <label>Pages</label><input type="number" id="ePages" />
-          </div>
+          <div class="field" style="grid-column: span 2"><label>Author</label><input type="text" id="eAuthor" /></div>
+          <div class="field" style="grid-column: span 2"><label>Title</label><input type="text" id="eTitle" /></div>
+          <div class="field" style="grid-column: span 2"><label>Genre</label><input type="text" id="eGenre" /></div>
+          <div class="field"><label>Year</label><input type="number" id="eYear" /></div>
+          <div class="field"><label>Pages</label><input type="number" id="ePages" /></div>
         </div>
         <div class="modal-actions">
-          <button class="btn-save" onclick="updateBook()">
-            CONFIRM UPDATE
-          </button>
-          <button class="btn-clear" onclick="closeModal('editModal')">
-            ABORT
-          </button>
+          <button class="btn-save" onclick="updateBook()">CONFIRM UPDATE</button>
+          <button class="btn-clear" onclick="closeModal('editModal')">ABORT</button>
         </div>
       </div>
     </div>
 
     <script>
-      let offset = 0,
-        total = 0;
+      let offset = 0, total = 0;
 
       async function loadBooks() {
         const limit = parseInt(document.getElementById("limitSelect").value);
@@ -163,6 +130,8 @@
           genre: document.getElementById("fGenre").value,
           year_from: document.getElementById("fYearFrom").value,
           year_to: document.getElementById("fYearTo").value,
+          pages_from: document.getElementById("fPagesFrom").value, // NEW
+          pages_to: document.getElementById("fPagesTo").value,     // NEW
         });
 
         try {
@@ -184,16 +153,19 @@
           .map(
             (b) => `
             <tr>
-                <td>${b.id}</td><td style="color:var(--secondary)">${b.author}</td><td>${b.title}</td>
-                <td>${b.publication_year}</td><td>${b.pages}</td><td><small>${b.genre}</small></td>
+                <td>${b.id}</td>
+                <td style="color:var(--secondary)">${b.author}</td>
+                <td>${b.title}</td>
+                <td>${b.publication_year}</td>
+                <td>${b.pages}</td>
+                <td><small>${b.genre}</small></td>
                 <td>
                     <button class="btn-edit" onclick="openEditModal(${b.id})">EDIT</button>
                     <button class="btn-delete" onclick="deleteBook(${b.id})">DEL</button>
                 </td>
             </tr>
         `
-          )
-          .join("");
+          ).join("");
       }
 
       async function createBook() {
@@ -201,8 +173,7 @@
           author: document.getElementById("cAuthor").value,
           title: document.getElementById("cTitle").value,
           genre: document.getElementById("cGenre").value,
-          publication_year:
-            parseInt(document.getElementById("cYear").value) || 0,
+          publication_year: parseInt(document.getElementById("cYear").value) || 0,
           pages: parseInt(document.getElementById("cPages").value) || 0,
         };
         try {
@@ -216,7 +187,7 @@
             clearCreateInputs();
             resetAndLoad();
           } else {
-            alert("CREATE FAILED");
+            alert("CREATE FAILED: CHECK YOUR DATA");
           }
         } catch (e) {
           alert("CONNECTION ERROR");
@@ -260,9 +231,11 @@
           if (res.ok) {
             closeModal("editModal");
             loadBooks();
+          } else {
+            alert("UPDATE FAILED");
           }
         } catch (e) {
-          alert("UPDATE FAILED");
+          alert("CONNECTION ERROR");
         }
       }
 
@@ -279,47 +252,40 @@
       }
 
       // UI HELPERS
-      function openModal(modalId) {
-        document.getElementById(modalId).style.display = "block";
-      }
-      function closeModal(modalId) {
-        document.getElementById(modalId).style.display = "none";
-      }
+      function openModal(id) { document.getElementById(id).style.display = "block"; }
+      function closeModal(id) { document.getElementById(id).style.display = "none"; }
 
       function updateUI(limit) {
         document.getElementById("prevBtn").disabled = offset === 0;
         document.getElementById("nextBtn").disabled = offset + limit >= total;
-        document.getElementById("pageInfo").innerText = `PAGE: ${
-          Math.floor(offset / limit) + 1
-        } | TOTAL: ${total}`;
+        document.getElementById("pageInfo").innerText = `PAGE: ${Math.floor(offset / limit) + 1} | TOTAL: ${total}`;
       }
+
       function changePage(step) {
-        offset += step * parseInt(document.getElementById("limitSelect").value);
+        const limit = parseInt(document.getElementById("limitSelect").value);
+        offset += step * limit;
         loadBooks();
       }
+
       function resetAndLoad() {
         offset = 0;
         loadBooks();
       }
+
       function clearCreateInputs() {
-        ["cAuthor", "cTitle", "cGenre", "cYear", "cPages"].forEach(
-          (id) => (document.getElementById(id).value = "")
-        );
+        ["cAuthor", "cTitle", "cGenre", "cYear", "cPages"].forEach(id => document.getElementById(id).value = "");
       }
+
       function clearFilters() {
-        ["fAuthor", "fTitle", "fGenre", "fYearFrom", "fYearTo"].forEach(
-          (id) => (document.getElementById(id).value = "")
+        ["fAuthor", "fTitle", "fGenre", "fYearFrom", "fYearTo", "fPagesFrom", "fPagesTo"].forEach(
+          id => document.getElementById(id).value = ""
         );
         resetAndLoad();
       }
 
       window.onload = loadBooks;
-
-      // Close modal on outside click
-      window.onclick = function (event) {
-        if (event.target.className === "modal") {
-          event.target.style.display = "none";
-        }
+      window.onclick = (event) => {
+        if (event.target.className === "modal") event.target.style.display = "none";
       };
     </script>
   </body>
