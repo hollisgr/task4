@@ -109,12 +109,12 @@ func (s *BookStorage) List(ctx context.Context, f domain.BookFilter) ([]domain.B
 		ToSql()
 
 	if err != nil {
-		return nil, 0, fmt.Errorf("build count sql: %w", err)
+		return nil, 0, fmt.Errorf("db list: build count sql: %w", err)
 	}
 
 	var total int
 	if err := s.db.QueryRow(ctx, countQuery, args...).Scan(&total); err != nil {
-		return nil, 0, fmt.Errorf("exec count sql: %w", err)
+		return nil, 0, fmt.Errorf("db list: exec count sql: %w", err)
 	}
 
 	if total == 0 {
@@ -131,12 +131,12 @@ func (s *BookStorage) List(ctx context.Context, f domain.BookFilter) ([]domain.B
 		ToSql()
 
 	if err != nil {
-		return nil, 0, fmt.Errorf("build data sql: %w", err)
+		return nil, 0, fmt.Errorf("db list: build data sql: %w", err)
 	}
 
 	rows, err := s.db.Query(ctx, dataQuery, args...)
 	if err != nil {
-		return nil, 0, fmt.Errorf("exec data query: %w", err)
+		return nil, 0, fmt.Errorf("db list: exec data query: %w", err)
 	}
 	defer rows.Close()
 
@@ -145,9 +145,15 @@ func (s *BookStorage) List(ctx context.Context, f domain.BookFilter) ([]domain.B
 		var b domain.Book
 		err := rows.Scan(&b.ID, &b.Author, &b.Title, &b.PublicationYear, &b.Pages, &b.Genre)
 		if err != nil {
-			return nil, 0, fmt.Errorf("scan book: %w", err)
+			return nil, 0, fmt.Errorf("db list: scan book error: %w", err)
 		}
 		books = append(books, b)
+	}
+
+	err = rows.Err()
+
+	if err != nil {
+		return nil, 0, fmt.Errorf("db list: rows iteration err: %w", err)
 	}
 
 	return books, total, nil
