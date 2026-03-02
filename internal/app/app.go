@@ -86,11 +86,5 @@ func ConnectToDB(cfg *config.Config) *pgxpool.Pool {
 		log.Fatalln("cant connect to db")
 	}
 	log.Println("Connection to database OK")
-
-	err = pgxPool.Ping(context.Background())
-	if err != nil {
-		log.Fatalln("cant ping to db, err:", err)
-	}
-	log.Println("Ping to database OK")
 	return pgxPool
 }
