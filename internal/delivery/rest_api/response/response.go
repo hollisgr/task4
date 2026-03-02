@@ -1,4 +1,4 @@
-package responce
+package response
 
 import (
 	"task4/internal/domain"
@@ -26,7 +26,7 @@ func SendSuccess(c *gin.Context, code int, data any) {
 	})
 }
 
-type BookResponce struct {
+type BookResponse struct {
 	ID              int    `json:"id"`
 	Author          string `json:"author"`
 	Title           string `json:"title"`
@@ -35,7 +35,7 @@ type BookResponce struct {
 	Genre           string `json:"genre"`
 }
 
-func (r *BookResponce) FromDomain(b domain.Book) {
+func (r *BookResponse) FromDomain(b domain.Book) {
 	r.ID = b.ID
 	r.Author = b.Author
 	r.Title = b.Title
@@ -44,7 +44,7 @@ func (r *BookResponce) FromDomain(b domain.Book) {
 	r.Genre = b.Genre
 }
 
-type BookListResponce struct {
-	Books []BookResponce `json:"books"`
+type BookListResponse struct {
+	Books []BookResponse `json:"books"`
 	Total int            `json:"total"`
 }
