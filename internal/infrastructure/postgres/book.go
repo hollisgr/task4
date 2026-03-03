@@ -51,6 +51,7 @@ func (s *BookStorage) CreateWithLog(ctx context.Context, data domain.Book) (id i
 	}
 
 	// create new log recording
+	logID := 0
 	createLog := squirrel.Insert("books_log").
 		Columns("book_id", "action").
 		Values(id, "create").
@@ -63,7 +64,7 @@ func (s *BookStorage) CreateWithLog(ctx context.Context, data domain.Book) (id i
 	}
 
 	row = tx.QueryRow(ctx, createLogSql, args...)
-	err = row.Scan(&id)
+	err = row.Scan(&logID)
 	if err != nil {
 		return id, fmt.Errorf("db create: insert book_log error: %w", err)
 	}
